@@ -1,0 +1,70 @@
+@model DomainManager.Models.Domain
+
+@{
+    ViewData["Title"] = "添加域名";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus"></i> 添加新域名
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div class="form-group">
+                            <label asp-for="Name"></label>
+                            <input asp-for="Name" class="form-control" placeholder="例如：example.com" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Status"></label>
+                            <select asp-for="Status" class="form-control">
+                                <option value="1">可用</option>
+                                <option value="2">已过期</option>
+                                <option value="3">即将到期</option>
+                                <option value="4">已停用</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="RegisterDate"></label>
+                                    <input asp-for="RegisterDate" type="date" class="form-control" />
+                                    <span asp-validation-for="RegisterDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="ExpiryDate"></label>
+                                    <input asp-for="ExpiryDate" type="date" class="form-control" />
+                                    <span asp-validation-for="ExpiryDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Notes"></label>
+                            <textarea asp-for="Notes" class="form-control" rows="3" placeholder="可选：添加备注信息"></textarea>
+                            <span asp-validation-for="Notes" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> 保存域名
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> 返回列表
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

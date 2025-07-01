@@ -1,0 +1,174 @@
+@model DomainManager.Models.DomainListViewModel
+
+@{
+    ViewData["Title"] = "域名管理";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-globe"></i> 域名管理系统</h2>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> 添加域名
+        </a>
+    </div>
+
+    <!-- 搜索和筛选区域 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="Index">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="searchTerm">搜索域名</label>
+                            <input type="text" class="form-control" id="searchTerm" name="searchTerm" 
+                                   value="@Model.SearchTerm" placeholder="输入域名进行搜索...">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="statusFilter">状态筛选</label>
+                            <select class="form-control" id="statusFilter" name="statusFilter">
+                                <option value="">所有状态</option>
+                                <option value="1" selected="@(Model.StatusFilter == DomainManager.Models.DomainStatus.Available)">可用</option>
+                                <option value="2" selected="@(Model.StatusFilter == DomainManager.Models.DomainStatus.Expired)">已过期</option>
+                                <option value="3" selected="@(Model.StatusFilter == DomainManager.Models.DomainStatus.Expiring)">即将到期</option>
+                                <option value="4" selected="@(Model.StatusFilter == DomainManager.Models.DomainStatus.Suspended)">已停用</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="fas fa-search"></i> 搜索
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 成功/错误消息 -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+
+    <!-- 域名列表 -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-list"></i> 域名列表 
+                <span class="badge badge-secondary">@Model.TotalCount 个域名</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Domains.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th><i class="fas fa-globe"></i> 域名</th>
+                                <th><i class="fas fa-signal"></i> 状态</th>
+                                <th><i class="fas fa-calendar-plus"></i> 注册日期</th>
+                                <th><i class="fas fa-calendar-times"></i> 到期日期</th>
+                                <th><i class="fas fa-sticky-note"></i> 备注</th>
+                                <th><i class="fas fa-cogs"></i> 操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var domain in Model.Domains)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@domain.Name</strong>
+                                    </td>
+                                    <td>
+                                        @switch (domain.Status)
+                                        {
+                                            case DomainManager.Models.DomainStatus.Available:
+                                                <span class="badge badge-success">
+                                                    <i class="fas fa-check"></i> 可用
+                                                </span>
+                                                break;
+                                            case DomainManager.Models.DomainStatus.Expired:
+                                                <span class="badge badge-danger">
+                                                    <i class="fas fa-times"></i> 已过期
+                                                </span>
+                                                break;
+                                            case DomainManager.Models.DomainStatus.Expiring:
+                                                <span class="badge badge-warning">
+                                                    <i class="fas fa-exclamation-triangle"></i> 即将到期
+                                                </span>
+                                                break;
+                                            case DomainManager.Models.DomainStatus.Suspended:
+                                                <span class="badge badge-secondary">
+                                                    <i class="fas fa-pause"></i> 已停用
+                                                </span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>@domain.RegisterDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@domain.ExpiryDate.ToString("yyyy-MM-dd")</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(domain.Notes))
+                                        {
+                                            <span title="@domain.Notes">
+                                                @(domain.Notes.Length > 20 ? domain.Notes.Substring(0, 20) + "..." : domain.Notes)
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">无</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-outline-primary" title="编辑">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@domain.Id" 
+                                           class="btn btn-sm btn-outline-danger" 
+                                           onclick="return confirm('确定要删除域名 @domain.Name 吗？')"
+                                           title="删除">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">暂无域名数据</h5>
+                    <p class="text-muted">点击上方"添加域名"按钮开始管理您的域名</p>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> 添加第一个域名
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
