@@ -1,0 +1,2 @@
+# domainManager
+.net core project
